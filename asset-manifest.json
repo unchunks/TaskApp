@@ -1,16 +1,16 @@
 {
   "files": {
     "main.css": "/TaskApp/static/css/main.1d28b8fd.css",
-    "main.js": "/TaskApp/static/js/main.5c72b99a.js",
+    "main.js": "/TaskApp/static/js/main.cc792a89.js",
     "static/js/453.ac79db8d.chunk.js": "/TaskApp/static/js/453.ac79db8d.chunk.js",
     "service-worker.js": "/TaskApp/service-worker.js",
     "index.html": "/TaskApp/index.html",
     "main.1d28b8fd.css.map": "/TaskApp/static/css/main.1d28b8fd.css.map",
-    "main.5c72b99a.js.map": "/TaskApp/static/js/main.5c72b99a.js.map",
+    "main.cc792a89.js.map": "/TaskApp/static/js/main.cc792a89.js.map",
     "453.ac79db8d.chunk.js.map": "/TaskApp/static/js/453.ac79db8d.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.1d28b8fd.css",
-    "static/js/main.5c72b99a.js"
+    "static/js/main.cc792a89.js"
   ]
 }
