@@ -11,65 +11,86 @@ import { checkDueDates } from './utils/notificationUtils';
 import { sortTodos } from './utils/todoUtils';
 
 function App() {
+  // ローカルストレージに保存されたタスクを取得・保存するカスタムフック
   const [todos, setTodos] = useLocalStorage('todos', []);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [editingTodo, setEditingTodo] = useState(null);
-  const [showCamera, setShowCamera] = useState(false);
-  const [sortBy, setSortBy] = useState('created');
-  const [sortOrder, setSortOrder] = useState('desc');
 
-  // 通知の許可をリクエスト
+  // 選択中の画像URL（モーダル表示用）
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  // 編集対象のタスク
+  const [editingTodo, setEditingTodo] = useState(null);
+
+  // カメラモーダル表示の有無
+  const [showCamera, setShowCamera] = useState(false);
+
+  // ソート対象のキー（created, due, completed, name）
+  const [sortBy, setSortBy] = useLocalStorage('sortBy', 'created');
+
+  // ソートの順序（昇順 or 降順）
+  const [sortOrder, setSortOrder] = useLocalStorage('sortOrder', 'desc');
+
+  // 初回マウント時に通知許可をリクエストする
   useEffect(() => {
     if ('Notification' in window) {
       Notification.requestPermission();
     }
   }, []);
 
-  // タスクの期限チェック
+  // タスクの期限チェックを1分ごとに実行（通知のため）
   useEffect(() => {
-    const interval = setInterval(() => checkDueDates(todos), 60000); // 1分ごとにチェック
-    return () => clearInterval(interval);
+    const interval = setInterval(() => checkDueDates(todos), 60000);
+    return () => clearInterval(interval); // コンポーネントアンマウント時にクリーンアップ
   }, [todos]);
 
+  // タスクの完了状態をトグルする
   const toggleTodo = (id) => {
     setTodos(todos.map(todo =>
       todo.id === id ? { ...todo, completed: !todo.completed } : todo
     ));
   };
 
+  // タスクを削除する
   const deleteTodo = (id) => {
     setTodos(todos.filter(todo => todo.id !== id));
   };
 
+  // 編集モーダルを開く
   const startEditing = (todo) => {
     setEditingTodo(todo);
   };
 
+  // 画像モーダルを開く
   const openImageModal = (imageUrl) => {
     setSelectedImage(imageUrl);
   };
 
+  // 画像モーダルを閉じる
   const closeImageModal = () => {
     setSelectedImage(null);
   };
 
+  // 新しいタスクを追加する
   const addTodo = (newTodo) => {
     setTodos([...todos, newTodo]);
   };
 
+  // 既存のタスクを更新する（編集完了時）
   const updateTodo = (updatedTodo) => {
     setTodos(todos.map(todo =>
       todo.id === updatedTodo.id ? updatedTodo : todo
     ));
-    setEditingTodo(null);
+    setEditingTodo(null); // 編集モーダルを閉じる
   };
 
   return (
     <div className="App">
+      {/* テーマ切り替えボタン */}
       <ThemeToggle />
+
       <header className="App-header">
         <h1>TODOアプリ</h1>
-        
+
+        {/* ソート操作用のセレクトボックス */}
         <div className="sort-controls">
           <select
             value={sortBy}
@@ -80,6 +101,7 @@ function App() {
             <option value="due">期限順</option>
             <option value="completed">完了状態</option>
             <option value="name">名前順</option>
+            <option value="priority">優先度順</option>
           </select>
           <select
             value={sortOrder}
@@ -91,12 +113,14 @@ function App() {
           </select>
         </div>
 
-        <TodoForm 
-          addTodo={addTodo} 
+        {/* タスク追加フォーム */}
+        <TodoForm
+          addTodo={addTodo}
           setShowCamera={setShowCamera}
           openImageModal={openImageModal}
         />
 
+        {/* タスクリスト（ソート済） */}
         <TodoList
           todos={sortTodos(todos, sortBy, sortOrder)}
           toggleTodo={toggleTodo}
@@ -106,6 +130,7 @@ function App() {
         />
       </header>
 
+      {/* 画像モーダル（画像が選択されている場合に表示） */}
       {selectedImage && (
         <ImageModal
           imageUrl={selectedImage}
@@ -113,6 +138,7 @@ function App() {
         />
       )}
 
+      {/* 編集モーダル（編集中のタスクがある場合に表示） */}
       {editingTodo && (
         <EditTodoModal
           todo={editingTodo}
@@ -123,13 +149,14 @@ function App() {
         />
       )}
 
+      {/* カメラモーダル（表示フラグがtrueのときに表示） */}
       {showCamera && (
         <CameraModal
           closeModal={() => setShowCamera(false)}
           onCapture={(file) => {
-            // カメラモードを閉じる
+            // モーダルを閉じる
             setShowCamera(false);
-            // 撮影した画像は編集中のタスクか新規タスクに追加
+            // 撮影画像を返すが、ここでは実際の処理は未実装のよう
             return { file, forEdit: !!editingTodo };
           }}
         />

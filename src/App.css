@@ -28,7 +28,7 @@
   --completed-item-bg: #edf2f7;
   --due-date-color: #e74c3c;
   --completed-due-date-color: #95a5a6;
-  
+  --a: #00c400;
   /* モーダル・オーバーレイ関連 */
   --modal-bg: #f8fafc;
   --modal-overlay: rgba(0, 0, 0, 0.7);
