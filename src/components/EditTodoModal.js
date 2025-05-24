@@ -208,7 +208,7 @@ function EditTodoModal({ todo, updateTodo, closeModal, openImageModal, setShowCa
           
           {/* Group Selection UI */}
           <div className="group-selection-container">
-            <label htmlFor="edit-group-select">Group:</label>
+            <label htmlFor="edit-group-select">グループ:</label>
             <select
               id="edit-group-select"
               value={selectedGroupId}
@@ -217,20 +217,20 @@ function EditTodoModal({ todo, updateTodo, closeModal, openImageModal, setShowCa
               }}
               className="group-select"
             >
-              <option value="">No Group</option>
+              <option value="">グループなし</option>
               {groups && groups.map(group => ( // Added groups && check
                 <option key={group.id} value={group.id} style={{ color: group.color }}>
                   {group.name}
                 </option>
               ))}
-              <option value="create_new_group">Create new group...</option>
+              <option value="create_new_group">新規グループを作成</option>
             </select>
 
             {showNewGroupInputs && (
               <div className="new-group-inputs">
                 <input
                   type="text"
-                  placeholder="New group name"
+                  placeholder="新規グループ名"
                   value={newGroupName}
                   onChange={(e) => setNewGroupName(e.target.value)}
                   className="new-group-name-input"

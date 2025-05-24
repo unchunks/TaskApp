@@ -544,6 +544,114 @@ button:hover {
   box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
+/*
+ * グループ選択関連
+ */
+.group-selection-container {
+  display: flex; /* 要素を横並びにするためにflexboxを使用 */
+  gap: 10px; /* 要素間のスペース */
+  margin-bottom: 20px; /* 下部マージン */
+  width: 100%; /* 親要素いっぱいに広がる */
+  max-width: 600px; /* 最大幅を設定 (他のフォーム要素と合わせる) */
+  justify-content: flex-start; /* 左寄せ (必要に応じて調整) */
+  align-items: center; /* 垂直方向中央揃え */
+}
+
+.group-select {
+  padding: 8px 12px; /* 内側の余白 */
+  border: 1px solid var(--border-color); /* 境界線 */
+  border-radius: 4px; /* 角を丸める */
+  background-color: var(--bg-color); /* 背景色 */
+  color: var(--text-color); /* 文字色 */
+  font-size: 14px; /* フォントサイズ */
+  cursor: pointer; /* マウスポインタを指マークに */
+  outline: none; /* フォーカス時のアウトラインを削除 */
+  flex-grow: 1; /* 利用可能なスペースを埋めるように拡張 */
+  max-width: 200px; /* ドロップダウンの最大幅 (必要に応じて調整) */
+}
+
+.group-select:hover {
+  border-color: var(--link-color); /* ホバー時の境界線の色 */
+}
+
+.group-select:focus {
+  border-color: var(--link-color); /* フォーカス時の境界線の色 */
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2); /* フォーカス時の影 */
+}
+
+/* モバイルデバイスでの調整 */
+@media (max-width: 768px) {
+  .group-selection-container {
+    flex-direction: column; /* 小さい画面では縦並びにする */
+    align-items: flex-start; /* 左寄せ */
+  }
+
+  .group-select {
+    width: 100%; /* 小さい画面では幅いっぱいにする */
+    max-width: none; /* 最大幅の制限を解除 */
+  }
+}
+
+/*
+ * 新しいグループ入力関連
+ */
+.new-group-inputs {
+  display: flex; /* 入力フィールドとボタンを横並びにするため */
+  gap: 10px; /* 要素間のスペース */
+  margin-top: 10px; /* 上部に少し余白 */
+  margin-bottom: 10px; /* 下部に少し余白 */
+  width: 100%; /* 親要素いっぱいに広がる */
+  max-width: 600px; /* 他のフォーム要素と最大幅を合わせる */
+  align-items: center; /* 垂直方向中央揃え */
+}
+
+.new-group-input {
+  flex-grow: 1; /* 利用可能なスペースを埋めるように拡張 */
+  padding: 10px; /* 内側の余白 */
+  font-size: 16px; /* フォントサイズ */
+  border: 1px solid var(--border-color); /* 境界線 */
+  border-radius: 5px; /* 角を丸める */
+  box-sizing: border-box; /* パディングとボーダーを幅に含める */
+  background-color: var(--bg-color); /* 背景色 */
+  color: var(--text-color); /* 文字色 */
+}
+
+.new-group-input:focus {
+  outline: none; /* フォーカス時のアウトラインを削除 */
+  border-color: var(--link-color); /* フォーカス時の境界線の色 */
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2); /* フォーカス時の影 */
+}
+
+.add-group-button {
+  /* 共通のボタンデザインを継承しつつ、必要に応じて調整 */
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  background-color: var(--button-bg); /* primaryボタンの背景色 */
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  flex-shrink: 0; /* 縮小させない */
+}
+
+.add-group-button:hover {
+  background-color: var(--button-hover-bg); /* primaryボタンのホバー色 */
+}
+
+/* モバイルデバイスでの調整 */
+@media (max-width: 768px) {
+  .new-group-inputs {
+    flex-direction: column; /* 小さい画面では縦並びにする */
+    align-items: flex-start; /* 左寄せ */
+  }
+
+  .new-group-input,
+  .add-group-button {
+    width: 100%; /* 小さい画面では幅いっぱいにする */
+  }
+}
+
 /* 
  * モーダル関連
  */

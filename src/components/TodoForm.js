@@ -212,7 +212,7 @@ function TodoForm({ addTodo, setShowCamera, openImageModal, capturedImageForNewT
 
       {/* Group Selection */}
       <div className="group-selection-container">
-        <label htmlFor="group-select">Group:</label>
+        <label htmlFor="group-select">グループ:</label>
         <select
           id="group-select"
           value={selectedGroupId}
@@ -228,20 +228,20 @@ function TodoForm({ addTodo, setShowCamera, openImageModal, capturedImageForNewT
           }}
           className="group-select"
         >
-          <option value="">No Group</option>
+          <option value="">グループなし</option>
           {groups && groups.map(group => (
             <option key={group.id} value={group.id} style={{ color: group.color }}>
               {group.name}
             </option>
           ))}
-          <option value="create_new_group">Create new group...</option>
+          <option value="create_new_group">新規グループを作成</option>
         </select>
 
         {showNewGroupInputs && (
           <div className="new-group-inputs">
             <input
               type="text"
-              placeholder="New group name"
+              placeholder="新規グループ名"
               value={newGroupName}
               onChange={(e) => setNewGroupName(e.target.value)}
               className="new-group-name-input"

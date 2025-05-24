@@ -213,10 +213,10 @@ function App() {
           >
             <option value="created">追加順</option>
             <option value="due">期限順</option>
-            <option value="completed">完了状態 (Completion Status)</option>
-            <option value="name">名前順 (Name)</option>
-            <option value="priority">優先度順 (Priority)</option>
-            <option value="manual">手動 (Manual)</option> {/* New Option */}
+            <option value="completed">完了状態</option>
+            <option value="name">名前順</option>
+            <option value="priority">優先度順</option>
+            <option value="manual">手動</option> {/* New Option */}
           </select>
           <select
             value={sortOrder}
