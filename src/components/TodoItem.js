@@ -10,16 +10,31 @@ import { getPriorityColor, getPriorityTextColor, getPriorityStr } from '../utils
  * @param {Function} props.deleteTodo - タスク削除の関数
  * @param {Function} props.startEditing - 編集開始関数
  * @param {Function} props.openImageModal - 画像クリック時にモーダルを開く関数
+ * @param {Object | null} props.group - タスクが所属するグループオブジェクト（なければnull）
+ * @param {boolean} props.isDragging - Optional prop to indicate if the item is currently being dragged
+ * @param {Object} props - Additional props from Draggable (e.g., draggableProps, dragHandleProps)
  */
-function TodoItem({ todo, toggleTodo, deleteTodo, startEditing, openImageModal }) {
+const TodoItem = React.forwardRef(({ todo, toggleTodo, deleteTodo, startEditing, openImageModal, group, isDragging, ...props }, ref) => {
+  // Base styles
+  let itemStyle = group ? { borderLeft: `5px solid ${group.color}`, paddingLeft: '10px' } : {};
+  // Add userSelect style when dragging
+  if (isDragging) {
+    itemStyle = { ...itemStyle, userSelect: 'none' };
+  }
+
+  const itemClassName = `todo-item ${todo.completed ? 'completed' : ''} ${group ? 'has-group' : ''} ${isDragging ? 'dragging' : ''}`;
+
   return (
     // タスク1件分のリストアイテム
-    <li className={`todo-item ${todo.completed ? 'completed' : ''}`}>
+    <li className={itemClassName} style={itemStyle} ref={ref} {...props}>
       {/* チェックボックス：タスクの完了状態の切り替え */}
       <input
         type="checkbox"
         checked={todo.completed}
-        onChange={() => toggleTodo(todo.id)}
+        onChange={(e) => { // Added stopPropagation just in case, though direct onChange usually doesn't bubble like click
+          e.stopPropagation();
+          toggleTodo(todo.id);
+        }}
         className="todo-checkbox"
       />
 
@@ -46,8 +61,25 @@ function TodoItem({ todo, toggleTodo, deleteTodo, startEditing, openImageModal }
         {/* テキストと期限表示（テキストクリックで完了トグル） */}
         <div
           className="todo-text-container"
-          onClick={() => toggleTodo(todo.id)}
+          onClick={(e) => { // Ensure this click is for toggling and doesn't get mixed with other actions
+            e.stopPropagation();
+            toggleTodo(todo.id);
+          }}
         >
+          {/* Group Info Display */}
+          {group && (
+            <span className="group-name-badge" style={{ 
+              backgroundColor: group.color, 
+              color: '#fff', // Assuming white text, adjust if needed for contrast
+              padding: '2px 6px', 
+              borderRadius: '4px',
+              fontSize: '0.8em',
+              marginRight: '8px' // Add some spacing
+            }}>
+              {group.name}
+            </span>
+          )}
+
           {/* 優先度バッジ */}
           <span
             className="priority-badge"

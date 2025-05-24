@@ -7,7 +7,7 @@ function CameraModal({ closeModal, onCapture }) {
   const canvasRef = useRef(null); // 撮影した画像を描画するためのキャンバス要素の参照
 
   // useCamera フックを呼び出し、カメラの制御機能（startCamera, stopCamera, capturePhoto）を取得
-  const { startCamera, stopCamera, capturePhoto } = useCamera(videoRef, canvasRef, onCapture);
+  const { startCamera, stopCamera, capturePhoto, devices, switchToNextCamera, currentDeviceId } = useCamera(videoRef, canvasRef, onCapture);
 
   // コンポーネントのマウント時にカメラを起動し、アンマウント時にカメラを停止
   useEffect(() => {
@@ -45,6 +45,25 @@ function CameraModal({ closeModal, onCapture }) {
           >
             撮影
           </button>
+
+          {/* カメラ切替ボタン */}
+          {devices && devices.length > 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent modal from closing
+                switchToNextCamera();
+              }}
+              className="switch-camera-button"
+              type="button"
+            >
+              カメラ切替
+              {/* Optionally, display current camera info: 
+                  currentDeviceId && devices.find(d => d.deviceId === currentDeviceId) 
+                  ? ` (${devices.find(d => d.deviceId === currentDeviceId).label.substring(0,15)}...)` 
+                  : '' 
+              */}
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { compressImage } from '../utils/imageUtils';
 import { getPriorityStr } from '../utils/priorityUtils';
 
-function EditTodoModal({ todo, updateTodo, closeModal, openImageModal, setShowCamera }) {
+function EditTodoModal({ todo, updateTodo, closeModal, openImageModal, setShowCamera, groups, addGroup, updateGroup }) {
   // タスクのテキスト、画像、期限を編集するための状態
   const [editText, setEditText] = useState(todo.text); // タスクのテキスト
   const [editImages, setEditImages] = useState([...todo.images]); // 編集中の画像
@@ -12,14 +12,54 @@ function EditTodoModal({ todo, updateTodo, closeModal, openImageModal, setShowCa
   const [priority, setPriority] = useState(todo.priority);        // 優先度（0-5）
   const editFileInputRef = useRef(null); // ファイル入力フィールドの参照
 
+  // Group related states
+  const [selectedGroupId, setSelectedGroupId] = useState(todo.groupId || '');
+  const [showNewGroupInputs, setShowNewGroupInputs] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupColor, setNewGroupColor] = useState('#FFFFFF');
+
   // 初期タスクに期限があればそれをセットする
   useEffect(() => {
     if (todo.dueDateTime) {
       const date = new Date(todo.dueDateTime);
       setEditDueDate(date.toISOString().split('T')[0]);
       setEditDueTime(date.toTimeString().slice(0, 5));
+    } else {
+      setEditDueDate('');
+      setEditDueTime('');
     }
-  }, [todo]);
+  }, [todo.dueDateTime]);
+
+  // useEffect to sync editImages and editFileNames with todo.images
+  useEffect(() => {
+    // Update editImages state if todo.images prop changes
+    setEditImages([...todo.images]);
+    
+    // Update editFileNames based on the new todo.images array
+    // This will generate generic names like "Image 1", "Image 2", etc.
+    setEditFileNames(todo.images.map((_, index) => `Image ${index + 1}`)); // Using "Image" as per instructions
+    
+  }, [todo.images]); // Dependency array includes todo.images
+
+  // useEffect to initialize selectedGroupId based on todo.groupId and groups
+  useEffect(() => {
+      if (todo.groupId && groups && groups.find(g => g.id === todo.groupId)) {
+          setSelectedGroupId(todo.groupId);
+      } else if (todo.groupId && groups && !groups.find(g => g.id === todo.groupId)) {
+          setSelectedGroupId(''); // Group was deleted, set to No Group
+      } else {
+          setSelectedGroupId(''); // Default to No Group
+      }
+  }, [todo.groupId, groups]);
+
+  // useEffect to manage visibility of new group input fields
+  useEffect(() => {
+      if (selectedGroupId === 'create_new_group') {
+          setShowNewGroupInputs(true);
+      } else {
+          setShowNewGroupInputs(false);
+      }
+  }, [selectedGroupId]);
 
   // 画像が変更されたときに呼ばれる関数
   const handleEditImageChange = async (e) => {
@@ -68,8 +108,19 @@ function EditTodoModal({ todo, updateTodo, closeModal, openImageModal, setShowCa
   };
 
   // フォームが送信されたときの処理
-  const handleEditSubmit = (e) => {
+  const handleEditSubmit = (e) => { // Keep it synchronous
     e.preventDefault();
+
+    let finalGroupId = selectedGroupId;
+    if (showNewGroupInputs && newGroupName.trim() !== '') {
+      const newGroup = addGroup(newGroupName.trim(), newGroupColor); // addGroup from App.js
+      if (newGroup && newGroup.id) {
+          finalGroupId = newGroup.id;
+      } else {
+          console.error("Failed to create new group or newGroup.id is missing from EditTodoModal");
+          finalGroupId = todo.groupId || ''; // Revert to original or no group
+      }
+    }
 
     // 期限を設定（期限がない場合はnull）
     const dueDateTime = editDueDate && editDueTime
@@ -77,16 +128,18 @@ function EditTodoModal({ todo, updateTodo, closeModal, openImageModal, setShowCa
       : null;
 
     // 編集後のタスクオブジェクトを作成
-    const updatedTodo = {
-      ...todo,                  // 元のタスクのプロパティを保持
-      text: editText,           // 編集されたテキスト
-      images: [...editImages],  // 編集された画像
-      dueDateTime: dueDateTime, // 編集された期限
-      priority: priority        // 編集された優先度
+    const updatedTodoData = { // Renamed to avoid conflict with prop 'todo'
+      ...todo,
+      text: editText,
+      images: [...editImages],
+      dueDateTime: dueDateTime,
+      priority: priority,
+      groupId: finalGroupId === 'create_new_group' || finalGroupId === '' ? null : finalGroupId,
     };
 
     // タスクを更新
-    updateTodo(updatedTodo);
+    updateTodo(updatedTodoData);
+    // closeModal(); // Usually modals close themselves after submit, App.js handles editingTodo to null.
   };
 
   return (
@@ -151,6 +204,45 @@ function EditTodoModal({ todo, updateTodo, closeModal, openImageModal, setShowCa
                 </div>
               )}
             </div>
+          </div>
+          
+          {/* Group Selection UI */}
+          <div className="group-selection-container">
+            <label htmlFor="edit-group-select">Group:</label>
+            <select
+              id="edit-group-select"
+              value={selectedGroupId}
+              onChange={(e) => {
+                setSelectedGroupId(e.target.value);
+              }}
+              className="group-select"
+            >
+              <option value="">No Group</option>
+              {groups && groups.map(group => ( // Added groups && check
+                <option key={group.id} value={group.id} style={{ color: group.color }}>
+                  {group.name}
+                </option>
+              ))}
+              <option value="create_new_group">Create new group...</option>
+            </select>
+
+            {showNewGroupInputs && (
+              <div className="new-group-inputs">
+                <input
+                  type="text"
+                  placeholder="New group name"
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  className="new-group-name-input"
+                />
+                <input
+                  type="color"
+                  value={newGroupColor}
+                  onChange={(e) => setNewGroupColor(e.target.value)}
+                  className="new-group-color-input"
+                />
+              </div>
+            )}
           </div>
 
           {/* 期限の設定 */}
