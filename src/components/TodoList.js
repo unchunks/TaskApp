@@ -1,6 +1,6 @@
 import React from 'react';
 import TodoItem from './TodoItem';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 /**
  * TodoList コンポーネント
@@ -55,7 +55,7 @@ function TodoList({ todos, toggleTodo, deleteTodo, startEditing, openImageModal,
                       deleteTodo={deleteTodo}
                       startEditing={startEditing}
                       openImageModal={openImageModal}
-                      // Props for react-beautiful-dnd:
+                      // Props for @hello-pangea/dnd:
                       ref={providedDraggable.innerRef}
                       {...providedDraggable.draggableProps}
                       {...providedDraggable.dragHandleProps}

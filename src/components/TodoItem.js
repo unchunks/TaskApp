@@ -132,6 +132,6 @@ const TodoItem = React.forwardRef(({ todo, toggleTodo, deleteTodo, startEditing,
       </div>
     </li>
   );
-}
+});
 
 export default TodoItem;

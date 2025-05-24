@@ -60,7 +60,7 @@ function App() {
       }
     }, 60000); // Check every minute
     return () => clearInterval(interval);
-  }, [todos]); // setTodos from useLocalStorage should be stable
+  }, [todos, setTodos]); // setTodos from useLocalStorage should be stable
 
   // タスクの完了状態をトグルする
   const toggleTodo = (id) => {
