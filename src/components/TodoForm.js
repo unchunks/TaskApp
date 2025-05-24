@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react'; // Import useEffect
 import { compressImage } from '../utils/imageUtils';
 import { getPriorityStr } from '../utils/priorityUtils';
 /**
@@ -10,8 +10,12 @@ import { getPriorityStr } from '../utils/priorityUtils';
  * @param {Function} addTodo - 新しいToDoをリストに追加する関数
  * @param {Function} setShowCamera - カメラモーダルを表示する関数
  * @param {Function} openImageModal - 画像モーダルを開く関数
+ * @param {string | null} capturedImageForNewTodo - 画像キャプチャ機能で取得した画像データ
+ * @param {Function} clearCapturedImageForNewTodo - capturedImageForNewTodo をクリアする関数
+ * @param {Array} groups - 利用可能なグループのリスト
+ * @param {Function} addGroup - 新しいグループを追加する関数
  */
-function TodoForm({ addTodo, setShowCamera, openImageModal }) {
+function TodoForm({ addTodo, setShowCamera, openImageModal, capturedImageForNewTodo, clearCapturedImageForNewTodo, groups, addGroup }) {
   const [input, setInput] = useState('');            // タスクのテキスト入力値
   const [images, setImages] = useState([]);           // 添付された画像のリスト
   const [fileNames, setFileNames] = useState([]);     // 画像ファイル名リスト
@@ -19,6 +23,12 @@ function TodoForm({ addTodo, setShowCamera, openImageModal }) {
   const [dueTime, setDueTime] = useState('');         // 期限時刻（HH:MM）
   const [priority, setPriority] = useState(0);        // 優先度（0-5）
   const fileInputRef = useRef(null);                  // 画像ファイル入力の参照
+
+  // Group related states
+  const [selectedGroupId, setSelectedGroupId] = useState(''); // Stores the ID of the selected group
+  const [showNewGroupInputs, setShowNewGroupInputs] = useState(false); // Toggle for new group inputs
+  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupColor, setNewGroupColor] = useState('#FFFFFF'); // Default color for new group
 
   // 画像が選択されたときに呼び出される
   const handleImageChange = async (e) => {
@@ -68,7 +78,28 @@ function TodoForm({ addTodo, setShowCamera, openImageModal }) {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';  // ファイル入力をクリア
     }
+    // Reset group states
+    setSelectedGroupId('');
+    setShowNewGroupInputs(false);
+    setNewGroupName('');
+    setNewGroupColor('#FFFFFF');
   };
+
+  // useEffect to handle captured image from camera
+  useEffect(() => {
+    if (capturedImageForNewTodo) {
+      // Add the captured image to the 'images' state
+      setImages(prevImages => [...prevImages, capturedImageForNewTodo]);
+      
+      // Add a placeholder filename to the 'fileNames' state
+      // You can use a generic name or generate one based on timestamp
+      const newFileName = `camera-${Date.now()}.jpg`;
+      setFileNames(prevFileNames => [...prevFileNames, newFileName]);
+      
+      // Clear the captured image state in App.js
+      clearCapturedImageForNewTodo();
+    }
+  }, [capturedImageForNewTodo, clearCapturedImageForNewTodo]);
 
   // 画像を削除する関数
   const removeImage = (index) => {
@@ -80,6 +111,19 @@ function TodoForm({ addTodo, setShowCamera, openImageModal }) {
   const handleSubmit = (e) => {
     e.preventDefault();  // フォーム送信のデフォルト動作を防止
     if (input.trim() === '' && images.length === 0) return;  // タスク内容が空で、画像もない場合は何もしない
+
+    let finalGroupId = selectedGroupId;
+    if (showNewGroupInputs && newGroupName.trim() !== '') {
+      // addGroup is synchronous as implemented in App.js
+      const newGroup = addGroup(newGroupName.trim(), newGroupColor);
+      if (newGroup && newGroup.id) {
+        finalGroupId = newGroup.id;
+      } else {
+        console.error("Failed to create new group or newGroup.id is missing");
+        // Optionally, handle error: don't proceed or use no group
+        // For now, it will fall back to selectedGroupId or no group
+      }
+    }
 
     // 期限が設定されている場合、日付と時刻を統合してISOフォーマットにする
     const dueDateTime = dueDate && dueTime 
@@ -94,11 +138,17 @@ function TodoForm({ addTodo, setShowCamera, openImageModal }) {
       completed: false,                 // 初期状態では未完了
       dueDateTime: dueDateTime ,        // 設定された期限
       priority: priority,               // 優先度を追加
+      groupId: finalGroupId === 'create_new_group' || finalGroupId === '' ? null : finalGroupId, // Store groupId
     };
     
     addTodo(newTodo);  // 新しいToDoをリストに追加
     setInput('');      // 入力フォームをリセット
-    clearFileInput();  // 画像、期限をクリア
+    clearFileInput();  // 画像、期限、グループ関連の入力をクリア
+    // Explicitly reset group fields here as clearFileInput might be called elsewhere
+    setSelectedGroupId('');
+    setShowNewGroupInputs(false);
+    setNewGroupName('');
+    setNewGroupColor('#FFFFFF');
   };
 
   return (
@@ -156,6 +206,52 @@ function TodoForm({ addTodo, setShowCamera, openImageModal }) {
                 </button>
               </div>
             ))}
+          </div>
+        )}
+      </div>
+
+      {/* Group Selection */}
+      <div className="group-selection-container">
+        <label htmlFor="group-select">Group:</label>
+        <select
+          id="group-select"
+          value={selectedGroupId}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value === 'create_new_group') {
+              setShowNewGroupInputs(true);
+              setSelectedGroupId('create_new_group');
+            } else {
+              setShowNewGroupInputs(false);
+              setSelectedGroupId(value);
+            }
+          }}
+          className="group-select"
+        >
+          <option value="">No Group</option>
+          {groups && groups.map(group => (
+            <option key={group.id} value={group.id} style={{ color: group.color }}>
+              {group.name}
+            </option>
+          ))}
+          <option value="create_new_group">Create new group...</option>
+        </select>
+
+        {showNewGroupInputs && (
+          <div className="new-group-inputs">
+            <input
+              type="text"
+              placeholder="New group name"
+              value={newGroupName}
+              onChange={(e) => setNewGroupName(e.target.value)}
+              className="new-group-name-input"
+            />
+            <input
+              type="color" // Simple color picker
+              value={newGroupColor}
+              onChange={(e) => setNewGroupColor(e.target.value)}
+              className="new-group-color-input"
+            />
           </div>
         )}
       </div>
