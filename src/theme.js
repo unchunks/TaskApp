@@ -56,30 +56,20 @@ export const lightTheme = createTheme({
     mode: 'light',
     primary: {
       main: '#6750A4',
-      light: '#D0BCFF',
-      dark: '#4F378B',
     },
     secondary: {
       main: '#625B71',
-      light: '#E8DEF8',
-      dark: '#4A4458',
-    },
-    error: {
-      main: '#B3261E',
-      light: '#F2B8B5',
-      dark: '#8C1D18',
     },
     background: {
       default: '#FFFFFF',
       paper: '#F7F2FA',
     },
-    surface: {
-      main: '#FFFBFE',
-      variant: '#E7E0EC',
-    },
-    text: {
-      primary: '#1C1B1F',
-      secondary: '#49454F',
+    priority: {
+      1: '#2196F3', // 青
+      2: '#4CAF50', // 緑
+      3: '#FFC107', // 黄色
+      4: '#FF9800', // オレンジ
+      5: '#FF5252', // 赤
     },
   },
 });
@@ -91,30 +81,20 @@ export const darkTheme = createTheme({
     mode: 'dark',
     primary: {
       main: '#D0BCFF',
-      light: '#E8DEF8',
-      dark: '#6750A4',
     },
     secondary: {
       main: '#CCC2DC',
-      light: '#E8DEF8',
-      dark: '#625B71',
-    },
-    error: {
-      main: '#F2B8B5',
-      light: '#F9DEDC',
-      dark: '#B3261E',
     },
     background: {
       default: '#1C1B1F',
       paper: '#2D2C31',
     },
-    surface: {
-      main: '#1C1B1F',
-      variant: '#49454F',
-    },
-    text: {
-      primary: '#E6E1E5',
-      secondary: '#CAC4D0',
+    priority: {
+      1: '#64B5F6', // 明るい青
+      2: '#81C784', // 明るい緑
+      3: '#FFD54F', // 明るい黄色
+      4: '#FFB74D', // 明るいオレンジ
+      5: '#FF8A80', // 明るい赤
     },
   },
 });
@@ -126,30 +106,20 @@ export const blueTheme = createTheme({
     mode: 'light',
     primary: {
       main: '#1976D2',
-      light: '#42a5f5',
-      dark: '#1565c0',
     },
     secondary: {
       main: '#2196F3',
-      light: '#ba68c8',
-      dark: '#7b1fa2',
-    },
-    error: {
-      main: '#d32f2f',
-      light: '#ef5350',
-      dark: '#c62828',
     },
     background: {
       default: '#E3F2FD',
       paper: '#FFFFFF',
     },
-    surface: {
-      main: '#ffffff',
-      variant: '#e0e0e0',
-    },
-    text: {
-      primary: '#2c3e50',
-      secondary: '#546e7a',
+    priority: {
+      1: '#42A5F5', // 青
+      2: '#66BB6A', // 緑
+      3: '#FFB300', // 黄色
+      4: '#FF7043', // オレンジ
+      5: '#EF5350', // 赤
     },
   },
 });
@@ -161,30 +131,20 @@ export const greenTheme = createTheme({
     mode: 'light',
     primary: {
       main: '#2E7D32',
-      light: '#4CAF50',
-      dark: '#1b5e20',
     },
     secondary: {
       main: '#4CAF50',
-      light: '#4caf50',
-      dark: '#388e3c',
-    },
-    error: {
-      main: '#d32f2f',
-      light: '#ef5350',
-      dark: '#c62828',
     },
     background: {
       default: '#E8F5E9',
       paper: '#FFFFFF',
     },
-    surface: {
-      main: '#ffffff',
-      variant: '#e8f5e9',
-    },
-    text: {
-      primary: '#1b5e20',
-      secondary: '#388e3c',
+    priority: {
+      1: '#1976D2', // 深い青
+      2: '#388E3C', // 深い緑
+      3: '#FBC02D', // 深い黄色
+      4: '#F57C00', // 深いオレンジ
+      5: '#D32F2F', // 深い赤
     },
   },
 });
@@ -203,6 +163,13 @@ export const beigeTheme = createTheme({
     background: {
       default: '#F5F5DC',
       paper: '#FFFFFF',
+    },
+    priority: {
+      1: '#9B8EA9', // ベージュ系の青
+      2: '#A7B388', // ベージュ系の緑
+      3: '#E9EDC9', // ベージュ系の黄色
+      4: '#D4A373', // ベージュ系のオレンジ
+      5: '#B76E79', // ベージュ系の赤
     },
   },
 });

@@ -175,7 +175,7 @@ function App() {
         <Box sx={{ mb: 2 }}>
           <TabbedView
             currentTab={currentTab}
-            onTabChange={setCurrentTab}
+            setCurrentTab={setCurrentTab}
             groups={groups}
           />
         </Box>

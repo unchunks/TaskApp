@@ -11,14 +11,14 @@ import {
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { getPriorityColor, getPriorityTextColor } from '../utils/priorityUtils';
+import { useTheme } from '@mui/material/styles';
 import { formatDueDateTime } from '../utils/dateUtils';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
+import { getContrastTextColor, setColorOpacity } from '../utils/colorUtils';
 
 const getPriorityStars = (priority) => {
-  const stars = '★'.repeat(priority) + '☆'.repeat(5 - priority);
-  return stars;
+  return '★'.repeat(priority) + '☆'.repeat(5 - priority);
 };
 
 /**
@@ -33,10 +33,24 @@ const getPriorityStars = (priority) => {
  * @param {boolean} props.isDragging - Optional prop to indicate if the item is currently being dragged
  */
 const TodoItem = memo(React.forwardRef(({ todo, toggleTodo, deleteTodo, startEditing, openImageModal, group, isDragging }, ref) => {
-  const itemStyle = {
-    ...(group ? { borderLeft: `5px solid ${group.color}` } : {}),
-    ...(isDragging ? { userSelect: 'none' } : {}),
+  const theme = useTheme();
+
+  const getPriorityColor = (priority) => {
+    return theme.palette.priority[priority] || theme.palette.primary.main;
   };
+
+  const getPriorityTextColor = (priority) => {
+    const color = getPriorityColor(priority);
+    return getContrastTextColor(color);
+  };
+
+  const itemStyle = isDragging
+    ? {
+        transform: 'scale(1.02)',
+        boxShadow: theme.shadows[4],
+        transition: 'all 0.2s ease',
+      }
+    : {};
 
   const isOverdue = todo.dueDateTime && !todo.completed && new Date(todo.dueDateTime) < new Date();
 
@@ -68,7 +82,10 @@ const TodoItem = memo(React.forwardRef(({ todo, toggleTodo, deleteTodo, startEdi
                 size="small"
                 sx={{
                   backgroundColor: group.color,
-                  color: '#fff',
+                  color: getContrastTextColor(group.color),
+                  '&:hover': {
+                    backgroundColor: setColorOpacity(group.color, 0.9),
+                  },
                 }}
                 onClick={() => { }}
               />
@@ -82,6 +99,9 @@ const TodoItem = memo(React.forwardRef(({ todo, toggleTodo, deleteTodo, startEdi
                 color: getPriorityTextColor(todo.priority),
                 fontFamily: 'monospace',
                 fontSize: '0.9rem',
+                '&:hover': {
+                  backgroundColor: setColorOpacity(getPriorityColor(todo.priority), 0.9),
+                },
               }}
               onClick={() => { }}
             />
