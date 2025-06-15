@@ -1,22 +1,70 @@
 import React from 'react';
+import {
+  Dialog,
+  DialogContent,
+  IconButton,
+  Box,
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
-function ImageModal({ imageUrl, closeModal }) {
+const ImageModal = ({ image, onClose }) => {
+  if (!image) return null;
+
   return (
-    // モーダル全体を覆うdiv。クリックでモーダルを閉じる
-    <div className="image-modal" onClick={closeModal}>
-      {/* モーダルのコンテンツ部分。クリックイベントが親のdivに伝播しないようにする */}
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        
-        {/* モーダルを閉じるボタン */}
-        <button className="close-modal-button" onClick={closeModal}>
-          ✕
-        </button>
-
-        {/* 拡大表示された画像 */}
-        <img src={imageUrl} alt="拡大表示" className="modal-image" />
-      </div>
-    </div>
+    <Dialog
+      open={true}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          bgcolor: 'background.paper',
+          borderRadius: 2,
+          overflow: 'hidden',
+        },
+      }}
+    >
+      <DialogContent sx={{ p: 0, position: 'relative' }}>
+        <IconButton
+          onClick={onClose}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            bgcolor: 'rgba(0, 0, 0, 0.5)',
+            color: 'white',
+            '&:hover': {
+              bgcolor: 'rgba(0, 0, 0, 0.7)',
+            },
+            zIndex: 1,
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+        <Box
+          sx={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            bgcolor: 'black',
+          }}
+        >
+          <Box
+            component="img"
+            src={image}
+            alt="拡大表示"
+            sx={{
+              maxWidth: '100%',
+              maxHeight: '80vh',
+              objectFit: 'contain',
+            }}
+          />
+        </Box>
+      </DialogContent>
+    </Dialog>
   );
-}
+};
 
 export default ImageModal;

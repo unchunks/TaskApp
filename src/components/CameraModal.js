@@ -1,73 +1,124 @@
 import React, { useRef, useEffect } from 'react';
-import useCamera from '../hooks/useCamera'; // useCamera フックをインポート
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  IconButton,
+  Box,
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
 
-function CameraModal({ closeModal, onCapture }) {
-  // ビデオ要素とキャンバス要素の参照を作成
-  const videoRef = useRef(null);  // カメラ映像を表示するためのビデオ要素の参照
-  const canvasRef = useRef(null); // 撮影した画像を描画するためのキャンバス要素の参照
+const CameraModal = ({ onClose, onCapture }) => {
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
 
-  // useCamera フックを呼び出し、カメラの制御機能（startCamera, stopCamera, capturePhoto）を取得
-  const { startCamera, stopCamera, capturePhoto, devices, switchToNextCamera, currentDeviceId } = useCamera(videoRef, canvasRef, onCapture);
-
-  // コンポーネントのマウント時にカメラを起動し、アンマウント時にカメラを停止
   useEffect(() => {
-    startCamera(); // カメラを起動
-    return () => stopCamera(); // コンポーネントがアンマウントされる際にカメラを停止
-  }, [startCamera, stopCamera]); // startCamera と stopCamera が変化した場合に再実行
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          streamRef.current = stream;
+        }
+      } catch (error) {
+        console.error('カメラの起動に失敗しました:', error);
+        onClose();
+      }
+    };
+
+    startCamera();
+
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [onClose]);
+
+  const handleCapture = () => {
+    if (videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(videoRef.current, 0, 0);
+      canvas.toBlob(blob => {
+        if (blob) {
+          onCapture(blob);
+        }
+      }, 'image/jpeg');
+    }
+  };
 
   return (
-    <div className="camera-modal" onClick={closeModal}>
-      {/* モーダルの内容がクリックされても親要素へのイベント伝播を防ぐ */}
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        {/* モーダルを閉じるボタン */}
-        <button className="close-modal-button" onClick={closeModal}>
-          ✕
-        </button>
-        
-        <h2>カメラで写真を撮影</h2>
-        
-        {/* カメラの映像を表示するコンテナ */}
-        <div className="camera-container">
-          {/* ビデオ要素にカメラ映像を表示 */}
-          <video
-            ref={videoRef} // ビデオ要素の参照を設定
-            autoPlay // 自動的に再生
-            playsInline // モバイル端末での画面表示時にフルスクリーンにならないようにする
-            className="camera-video"
-          />
-          {/* キャンバス要素は非表示で、撮影時に画像を描画するために使用 */}
-          <canvas ref={canvasRef} style={{ display: 'none' }} />
-          
-          {/* 撮影ボタン */}
-          <button
-            onClick={capturePhoto} // 撮影時に写真をキャプチャする関数
-            className="capture-button"
-          >
-            撮影
-          </button>
+    <Dialog
+      open={true}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          bgcolor: 'background.paper',
+          boxShadow: 24,
+          borderRadius: 2,
+        },
+      }}
+    >
+      <DialogTitle>
+        カメラ
+        <IconButton
+          onClick={onClose}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: 'text.primary',
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
 
-          {/* カメラ切替ボタン */}
-          {devices && devices.length > 1 && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent modal from closing
-                switchToNextCamera();
-              }}
-              className="switch-camera-button"
-              type="button"
-            >
-              カメラ切替
-              {/* Optionally, display current camera info: 
-                  currentDeviceId && devices.find(d => d.deviceId === currentDeviceId) 
-                  ? ` (${devices.find(d => d.deviceId === currentDeviceId).label.substring(0,15)}...)` 
-                  : '' 
-              */}
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
+      <DialogContent>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 2,
+            mt: 2,
+          }}
+        >
+          <Box
+            component="video"
+            ref={videoRef}
+            autoPlay
+            playsInline
+            sx={{
+              width: '100%',
+              maxHeight: '60vh',
+              borderRadius: 1,
+              bgcolor: 'background.default',
+            }}
+          />
+        </Box>
+      </DialogContent>
+
+      <DialogActions>
+        <Button onClick={onClose}>キャンセル</Button>
+        <Button
+          variant="contained"
+          startIcon={<CameraAltIcon />}
+          onClick={handleCapture}
+        >
+          撮影
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
-}
+};
 
 export default CameraModal;

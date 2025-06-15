@@ -1,31 +1,47 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Tabs, Tab, Box } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
-const TabbedView = ({ children, tabLabels }) => {
-    const [activeTab, setActiveTab] = useState(0);
+const TabbedView = ({ currentTab, setCurrentTab, groups }) => {
+  const theme = useTheme();
 
-    return (
-        <div>
-            <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '10px' }}>
-                {tabLabels.map((label, index) => (
-                    <button
-                        key={index}
-                        onClick={() => setActiveTab(index)}
-                        style={{
-                            padding: '8px 16px',
-                            border: 'none',
-                            background: activeTab === index ? '#ddd' : '#eee',
-                            cursor: 'pointer',
-                        }}
-                    >
-                        {label}
-                    </button>
-                ))}
-            </div>
-            <div>
-                {children[activeTab]}
-            </div>
-        </div>
-    );
+  const handleTabChange = (event, newValue) => {
+    setCurrentTab(newValue);
+  };
+
+  return (
+    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+      <Tabs
+        value={currentTab}
+        onChange={handleTabChange}
+        variant="scrollable"
+        scrollButtons="auto"
+        allowScrollButtonsMobile
+        sx={{
+          '& .MuiTab-root': {
+            minWidth: 100,
+          },
+        }}
+      >
+        <Tab label="すべて" value="all" />
+        <Tab label="未完了" value="active" />
+        <Tab label="完了済み" value="completed" />
+        {groups.map((group) => (
+          <Tab
+            key={group.id}
+            label={group.name}
+            value={group.id}
+            sx={{
+              color: group.color,
+              '&.Mui-selected': {
+                color: group.color,
+              },
+            }}
+          />
+        ))}
+      </Tabs>
+    </Box>
+  );
 };
 
 export default TabbedView;
