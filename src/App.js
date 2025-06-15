@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ThemeProvider, CssBaseline, Container, Box, Typography } from '@mui/material';
 import './App.css';
 import { compressImage } from './utils/imageUtils'; // Import compressImage
-import ThemeToggle from './components/ThemeToggle';
+import ThemeSelector from './components/ThemeSelector';
 import TodoForm from './components/TodoForm';
 import TodoList from './components/TodoList';
 import ImageModal from './components/ImageModal';
@@ -12,7 +12,7 @@ import SortControl from './components/SortControl';
 import useLocalStorage from './hooks/useLocalStorage';
 import { checkDueDates } from './utils/notificationUtils';
 import { sortTodos } from './utils/todoUtils';
-import theme, { darkTheme } from './theme';
+import { themes } from './theme';
 import TabbedView from './components/TabbedView';
 
 function App() {
@@ -26,9 +26,9 @@ function App() {
     return savedGroups ? JSON.parse(savedGroups) : [];
   });
 
-  const [darkMode, setDarkMode] = useState(() => {
-    const savedMode = localStorage.getItem('darkMode');
-    return savedMode ? JSON.parse(savedMode) : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const [currentTheme, setCurrentTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme || 'light';
   });
 
   const [selectedImage, setSelectedImage] = useState(null);
@@ -53,8 +53,8 @@ function App() {
   }, [groups]);
 
   useEffect(() => {
-    localStorage.setItem('darkMode', JSON.stringify(darkMode));
-  }, [darkMode]);
+    localStorage.setItem('theme', currentTheme);
+  }, [currentTheme]);
 
   useEffect(() => {
     localStorage.setItem('sortBy', sortBy);
@@ -154,14 +154,14 @@ function App() {
   const sortedTodos = sortTodos(filteredTodos, sortBy, sortOrder);
 
   return (
-    <ThemeProvider theme={darkMode ? darkTheme : theme}>
+    <ThemeProvider theme={themes[currentTheme]}>
       <CssBaseline />
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
           <Typography variant="h4" component="h1">
             TODOアプリ
           </Typography>
-          <ThemeToggle darkMode={darkMode} onToggle={() => setDarkMode(!darkMode)} />
+          <ThemeSelector currentTheme={currentTheme} onThemeChange={setCurrentTheme} />
         </Box>
 
         <TodoForm
