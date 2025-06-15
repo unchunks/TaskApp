@@ -1,6 +1,25 @@
-import React from 'react';
-import { formatDueDateTime } from '../utils/dateUtils'; // 日時をフォーマットするユーティリティ関数
-import { getPriorityColor, getPriorityTextColor, getPriorityStr } from '../utils/priorityUtils'; // 優先度に応じた値を返すユーティリティ関数
+import React, { memo } from 'react';
+import {
+  Box,
+  Checkbox,
+  Typography,
+  IconButton,
+  Paper,
+  Chip,
+  Stack,
+  Grid,
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { useTheme } from '@mui/material/styles';
+import { formatDueDateTime } from '../utils/dateUtils';
+import { format } from 'date-fns';
+import { ja } from 'date-fns/locale';
+import { getContrastTextColor, setColorOpacity } from '../utils/colorUtils';
+
+const getPriorityStars = (priority) => {
+  return '★'.repeat(priority) + '☆'.repeat(5 - priority);
+};
 
 /**
  * タスク1件分を表示するコンポーネント
@@ -12,126 +31,162 @@ import { getPriorityColor, getPriorityTextColor, getPriorityStr } from '../utils
  * @param {Function} props.openImageModal - 画像クリック時にモーダルを開く関数
  * @param {Object | null} props.group - タスクが所属するグループオブジェクト（なければnull）
  * @param {boolean} props.isDragging - Optional prop to indicate if the item is currently being dragged
- * @param {Object} props - Additional props from Draggable (e.g., draggableProps, dragHandleProps)
  */
-const TodoItem = React.forwardRef(({ todo, toggleTodo, deleteTodo, startEditing, openImageModal, group, isDragging, ...props }, ref) => {
-  // Base styles
-  let itemStyle = group ? { borderLeft: `5px solid ${group.color}`, paddingLeft: '10px' } : {};
-  // Add userSelect style when dragging
-  if (isDragging) {
-    itemStyle = { ...itemStyle, userSelect: 'none' };
-  }
+const TodoItem = memo(React.forwardRef(({ todo, toggleTodo, deleteTodo, startEditing, openImageModal, group, isDragging }, ref) => {
+  const theme = useTheme();
 
-  const itemClassName = `todo-item ${todo.completed ? 'completed' : ''} ${group ? 'has-group' : ''} ${isDragging ? 'dragging' : ''}`;
+  const getPriorityColor = (priority) => {
+    return theme.palette.priority[priority] || theme.palette.primary.main;
+  };
+
+  const getPriorityTextColor = (priority) => {
+    const color = getPriorityColor(priority);
+    return getContrastTextColor(color);
+  };
+
+  const itemStyle = isDragging
+    ? {
+        transform: 'scale(1.02)',
+        boxShadow: theme.shadows[4],
+        transition: 'all 0.2s ease',
+      }
+    : {};
+
+  const isOverdue = todo.dueDateTime && !todo.completed && new Date(todo.dueDateTime) < new Date();
 
   return (
-    // タスク1件分のリストアイテム
-    <li className={itemClassName} style={itemStyle} ref={ref} {...props}>
-      {/* チェックボックス：タスクの完了状態の切り替え */}
-      <input
-        type="checkbox"
-        checked={todo.completed}
-        onChange={(e) => { // Added stopPropagation just in case, though direct onChange usually doesn't bubble like click
-          e.stopPropagation();
-          toggleTodo(todo.id);
-        }}
-        className="todo-checkbox"
-      />
-
-      {/* タスク本文・画像・期限をまとめたコンテナ */}
-      <div className="todo-content">
-        {/* 画像が1枚以上ある場合に表示 */}
-        {todo.images && todo.images.length > 0 && (
-          <div className="todo-images">
-            {todo.images.map((image, index) => (
-              <img
-                key={index}
-                src={image}
-                alt={`タスク画像 ${index + 1}`}
-                className="todo-image"
-                onClick={(e) => {
-                  e.stopPropagation(); // クリックイベントが親要素に伝播するのを防止
-                  openImageModal(image); // 画像モーダルを開く
-                }}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* テキストと期限表示（テキストクリックで完了トグル） */}
-        <div
-          className="todo-text-container"
-          onClick={(e) => { // Ensure this click is for toggling and doesn't get mixed with other actions
+    <Paper
+      ref={ref}
+      elevation={1}
+      sx={{
+        p: 2,
+        mb: 2,
+        opacity: todo.completed ? 0.7 : 1,
+        ...itemStyle,
+      }}
+    >
+      <Stack direction="row" spacing={2} alignItems="flex-start">
+        <Checkbox
+          checked={todo.completed}
+          onChange={(e) => {
             e.stopPropagation();
             toggleTodo(todo.id);
           }}
-        >
-          {/* Group Info Display */}
-          {group && (
-            <span className="group-name-badge" style={{ 
-              backgroundColor: group.color, 
-              color: '#fff', // Assuming white text, adjust if needed for contrast
-              padding: '2px 6px', 
-              borderRadius: '4px',
-              fontSize: '0.8em',
-              marginRight: '8px' // Add some spacing
-            }}>
-              {group.name}
-            </span>
-          )}
+        />
 
-          {/* 優先度バッジ */}
-          <span
-            className="priority-badge"
-            style={{
-              backgroundColor: getPriorityColor(todo.priority),
-              color: getPriorityTextColor(todo.priority),
-              padding: '2px 6px',
-              borderRadius: '12px',
-              marginLeft: '8px',
-              fontSize: '0.85rem',
+        <Box sx={{ flex: 1 }}>
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+            {group && (
+              <Chip
+                label={group.name}
+                size="small"
+                sx={{
+                  backgroundColor: group.color,
+                  color: getContrastTextColor(group.color),
+                  '&:hover': {
+                    backgroundColor: setColorOpacity(group.color, 0.9),
+                  },
+                }}
+                onClick={() => { }}
+              />
+            )}
+
+            <Chip
+              label={getPriorityStars(todo.priority)}
+              size="small"
+              sx={{
+                backgroundColor: getPriorityColor(todo.priority),
+                color: getPriorityTextColor(todo.priority),
+                fontFamily: 'monospace',
+                fontSize: '0.9rem',
+                '&:hover': {
+                  backgroundColor: setColorOpacity(getPriorityColor(todo.priority), 0.9),
+                },
+              }}
+              onClick={() => { }}
+            />
+          </Stack>
+
+          <Typography
+            variant="body1"
+            sx={{
+              textDecoration: todo.completed ? 'line-through' : 'none',
+              color: todo.completed ? 'text.secondary' : 'text.primary',
+              wordBreak: 'break-word',
             }}
           >
-            優先度 {getPriorityStr(todo.priority)}
-          </span>
-
-          {/* タスク内容（完了済みならスタイル変更） */}
-          <span className={todo.completed ? 'completed' : ''}>
             {todo.text}
-          </span>
+          </Typography>
 
-          {/* 締切日時がある場合のみ表示 */}
           {todo.dueDateTime && (
-            <span className={`due-date ${todo.completed ? 'completed' : ''}`}>
-              期限: {formatDueDateTime(todo.dueDateTime)}
-            </span>
+            <Typography
+              variant="caption"
+              sx={{
+                display: 'block',
+                mt: 1,
+                color: isOverdue ? 'error.main' : 'text.secondary',
+                textDecoration: todo.completed ? 'line-through' : 'none',
+              }}
+            >
+              期限: {format(new Date(todo.dueDateTime), 'M月d日 HH:mm', { locale: ja })}
+            </Typography>
           )}
-        </div>
-      </div>
 
-      {/* 編集・削除ボタン */}
-      <div className="todo-actions">
-        <button
-          onClick={(e) => {
-            e.stopPropagation(); // クリックが完了トグルに影響しないようにする
-            startEditing(todo); // 編集モーダルを開く
-          }}
-          className="edit-button"
-        >
-          編集
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation(); // 同上
-            deleteTodo(todo.id); // タスクを削除
-          }}
-          className="delete-button"
-        >
-          削除
-        </button>
-      </div>
-    </li>
+          {todo.images && todo.images.length > 0 && (
+            <Box sx={{ mt: 2 }}>
+              <Grid container spacing={1}>
+                {todo.images.map((image, index) => (
+                  <Grid item key={index} xs={3} sm={2} md={1.5}>
+                    <Box
+                      component="img"
+                      src={image}
+                      alt={`添付画像 ${index + 1}`}
+                      onClick={() => openImageModal(image)}
+                      sx={{
+                        display: 'block',
+                        width: '80px',
+                        height: 'auto',
+                        aspectRatio: '1 / 1',
+                        objectFit: 'cover',
+                        borderRadius: 1,
+                        cursor: 'pointer',
+                        transition: 'transform 0.3s, box-shadow 0.3s',
+                        '&:hover': {
+                          transform: 'scale(1.05)',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                        },
+                      }}
+                    />
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          )}
+        </Box>
+
+        <Stack direction="row" spacing={1}>
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              startEditing(todo);
+            }}
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              deleteTodo(todo.id);
+            }}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Stack>
+      </Stack>
+    </Paper>
   );
-});
+}));
 
 export default TodoItem;
